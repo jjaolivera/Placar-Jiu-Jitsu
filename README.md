@@ -7,8 +7,8 @@ Este é um projeto educacional desenvolvido em Python que funciona como um placa
 
 Funcionalidades principais:
 
-Registro de pontos, vantagens e penalidades.
+- Registro de pontos, vantagens e penalidades.
 
-Controle de tempo de luta.
+- Controle de tempo de luta.
 
-Visualização do placar atualizado em tempo real.
+- Visualização do placar atualizado em tempo real.
