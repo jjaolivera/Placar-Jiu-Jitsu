@@ -177,11 +177,11 @@ class PlacarControle(QWidget):
         # Controles do cronômetro
         timer_controls = QHBoxLayout()
         for text, func in [
-            ("▶ Iniciar", self.start),
-            ("⏸ Pausar", self.pause),
-            ("⏹ Resetar", self.reset),
-            ("🔄 Resetar Tudo", self.reset_all),  # Novo botão
-            ("⛶ Tela Cheia", self.exibicao.toggle_fullscreen)
+            ("▶ Iniciar (I)", self.start),
+            ("⏸ Pausar (P)", self.pause),
+            ("⏹ Resetar (T)", self.reset),
+            ("🔄 Resetar Tudo (R)", self.reset_all),  # Novo botão
+            ("⛶ Tela Cheia (F11)", self.exibicao.toggle_fullscreen)
         ]:
             btn = QPushButton(text)
             btn.setStyleSheet("font-size:20px; padding:10px;")
@@ -308,33 +308,16 @@ class PlacarControle(QWidget):
         key = event.key()
         if key == Qt.Key_Space:  # type: ignore
             self.pause() if self.running else self.start()
-        elif key == Qt.Key_R:  # type: ignore
-            self.reset()
         elif key == Qt.Key_T:  # type: ignore
+            self.reset()
+        elif key == Qt.Key_R:  # type: ignore
             self.reset_all()
-        elif key == Qt.Key_F:  # type: ignore
+        elif key == Qt.Key_F11:  # type: ignore
             self.exibicao.toggle_fullscreen()
-
-        # Atleta A
-        elif key == Qt.Key_1: self._change("A", "points", 2)  # type: ignore
-        elif key == Qt.Key_2: self._change("A", "points", 3)  # type: ignore
-        elif key == Qt.Key_3: self._change("A", "points", 4)  # type: ignore
-        elif key == Qt.Key_4: self._change("A", "points", -1)  # type: ignore
-        elif key == Qt.Key_Q: self._change("A", "advantages", 1)  # type: ignore
-        elif key == Qt.Key_A: self._change("A", "advantages", -1)  # type: ignore
-        elif key == Qt.Key_W: self._change("A", "penalties", 1)  # type: ignore
-        elif key == Qt.Key_S: self._change("A", "penalties", -1)  # type: ignore
-
-        # Atleta B
-        elif key == Qt.Key_7: self._change("B", "points", 2)  # type: ignore
-        elif key == Qt.Key_8: self._change("B", "points", 3)  # type: ignore
-        elif key == Qt.Key_9: self._change("B", "points", 4)  # type: ignore
-        elif key == Qt.Key_0: self._change("B", "points", -1)  # type: ignore
-        elif key == Qt.Key_U: self._change("B", "advantages", 1)  # type: ignore
-        elif key == Qt.Key_J: self._change("B", "advantages", -1)  # type: ignore
-        elif key == Qt.Key_I: self._change("B", "penalties", 1)  # type: ignore
-        elif key == Qt.Key_K: self._change("B", "penalties", -1)  # type: ignore
-
+        elif key == Qt.Key_P: # type: ignore
+            self.pause()
+        elif key == Qt.Key_I: # type: ignore
+            self.start()
 
 # ================== TELA INICIAL ==================
 class TelaInicial(QWidget):
