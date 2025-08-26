@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QFrame, QLineEdit
 )
 from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtGui import QPixmap
 
 
 # ================== TELÃO (EXIBIÇÃO) ==================
@@ -25,20 +26,34 @@ class PlacarExibicao(QWidget):
         # Layout principal
         main = QVBoxLayout(self)
 
+        # ===== TOPO: LOGO + CRONÔMETRO =====
+        top_layout = QHBoxLayout()
+
+        # Logo no canto superior esquerdo
+        self.logo_label = QLabel()
+        pixmap = QPixmap("logo.png") # Coloque o caminho da sua imagem aqui
+        if not pixmap.isNull():
+            pixmap = pixmap.scaledToHeight(120, Qt.SmoothTransformation)# type: ignore
+            self.logo_label.setPixmap(pixmap)
+        self.logo_label.setAlignment(Qt.AlignLeft | Qt.AlignTop)  # type: ignore
+        top_layout.addWidget(self.logo_label, alignment=Qt.AlignLeft)# type: ignore
+
         # Cronômetro
         self.timer_label = QLabel(tempo_texto)
-        self.timer_label.setAlignment(Qt.AlignCenter)# type: ignore
+        self.timer_label.setAlignment(Qt.AlignCenter)  # type: ignore
         self.timer_label.setStyleSheet(
-            "font-size:100px; font-weight:900; color:#0f0; background:#000;"
+            "font-size:150px; font-weight:900; color:white;"
         )
         self.timer_label.setFixedHeight(140)
-        main.addWidget(self.timer_label)
+        top_layout.addWidget(self.timer_label, stretch=1)
 
-        # Placar dos atletas
+        top_layout.addStretch()
+        main.addLayout(top_layout)
+
+        # ===== PLACAR DOS ATLETAS =====
         board = QHBoxLayout()
         main.addLayout(board)
 
-        # Lado A (branco) e Lado B (verde)
         board.addWidget(self._build_side("A", atleta1, "white"))
         board.addWidget(self._build_side("B", atleta2, "#199649"))
 
@@ -49,13 +64,13 @@ class PlacarExibicao(QWidget):
 
         # Nome
         lbl_name = QLabel(name)
-        lbl_name.setAlignment(Qt.AlignCenter)# type: ignore
+        lbl_name.setAlignment(Qt.AlignCenter)  # type: ignore
         lbl_name.setStyleSheet("font-size:36px; font-weight:700; color:black;")
         layout.addWidget(lbl_name)
 
         # Pontos principais
         lbl_points = QLabel("0")
-        lbl_points.setAlignment(Qt.AlignCenter)# type: ignore
+        lbl_points.setAlignment(Qt.AlignCenter)  # type: ignore
         lbl_points.setStyleSheet("font-size:250px; font-weight:900; color:black;")
         layout.addWidget(lbl_points)
 
@@ -66,7 +81,7 @@ class PlacarExibicao(QWidget):
         vant.setStyleSheet("background:#0181ba; border:none;")
         vant_layout = QVBoxLayout(vant)
         lbl_v = QLabel("0")
-        lbl_v.setAlignment(Qt.AlignCenter)# type: ignore
+        lbl_v.setAlignment(Qt.AlignCenter)  # type: ignore
         lbl_v.setStyleSheet("font-size:80px; font-weight:900; color:black;")
         vant_layout.addWidget(lbl_v)
         bottom.addWidget(vant)
@@ -75,7 +90,7 @@ class PlacarExibicao(QWidget):
         pen.setStyleSheet("background:red; border:none;")
         pen_layout = QVBoxLayout(pen)
         lbl_p = QLabel("0")
-        lbl_p.setAlignment(Qt.AlignCenter)# type: ignore
+        lbl_p.setAlignment(Qt.AlignCenter)  # type: ignore
         lbl_p.setStyleSheet("font-size:80px; font-weight:900; color:black;")
         pen_layout.addWidget(lbl_p)
         bottom.addWidget(pen)
@@ -83,9 +98,9 @@ class PlacarExibicao(QWidget):
         layout.addLayout(bottom)
 
         # Guardar refs pelo lado
-        self.labels[side]["points"] = lbl_points# type: ignore
-        self.labels[side]["advantages"] = lbl_v# type: ignore
-        self.labels[side]["penalties"] = lbl_p# type: ignore
+        self.labels[side]["points"] = lbl_points  # type: ignore
+        self.labels[side]["advantages"] = lbl_v  # type: ignore
+        self.labels[side]["penalties"] = lbl_p  # type: ignore
 
         return frame
 
@@ -93,9 +108,9 @@ class PlacarExibicao(QWidget):
         """Atualiza os valores no telão"""
         self.timer_label.setText(timer_text)
         for side in ("A", "B"):
-            self.labels[side]["points"].setText(str(state[side]["points"]))# type: ignore
-            self.labels[side]["advantages"].setText(str(state[side]["advantages"]))# type: ignore
-            self.labels[side]["penalties"].setText(str(state[side]["penalties"]))# type: ignore
+            self.labels[side]["points"].setText(str(state[side]["points"]))  # type: ignore
+            self.labels[side]["advantages"].setText(str(state[side]["advantages"]))  # type: ignore
+            self.labels[side]["penalties"].setText(str(state[side]["penalties"]))  # type: ignore
 
     def toggle_fullscreen(self):
         if self.isFullScreen():
@@ -135,7 +150,7 @@ class PlacarControle(QWidget):
 
         # Cronômetro
         self.timer_label = QLabel(self._fmt(self.remaining))
-        self.timer_label.setAlignment(Qt.AlignCenter)# type: ignore
+        self.timer_label.setAlignment(Qt.AlignCenter)  # type: ignore
         self.timer_label.setStyleSheet(
             "font-size:50px; font-weight:900; color:#0f0; background:#000;"
         )
@@ -165,6 +180,7 @@ class PlacarControle(QWidget):
             ("▶ Iniciar", self.start),
             ("⏸ Pausar", self.pause),
             ("⏹ Resetar", self.reset),
+            ("🔄 Resetar Tudo", self.reset_all),  # Novo botão
             ("⛶ Tela Cheia", self.exibicao.toggle_fullscreen)
         ]:
             btn = QPushButton(text)
@@ -181,14 +197,25 @@ class PlacarControle(QWidget):
 
         # Nome
         lbl_name = QLabel(name)
-        lbl_name.setAlignment(Qt.AlignCenter)# type: ignore
+        lbl_name.setAlignment(Qt.AlignCenter)  # type: ignore
         lbl_name.setStyleSheet("font-size:24px; font-weight:700;")
         layout.addWidget(lbl_name)
 
         # Pontos atuais (mostra no controle)
         self.__dict__[f"lbl_{side}_points"] = QLabel("0")
-        self.__dict__[f"lbl_{side}_points"].setAlignment(Qt.AlignCenter)# type: ignore
+        self.__dict__[f"lbl_{side}_points"].setAlignment(Qt.AlignCenter)  # type: ignore
         self.__dict__[f"lbl_{side}_points"].setStyleSheet("font-size:60px; font-weight:900;")
+        layout.addWidget(self.__dict__[f"lbl_{side}_points"])
+
+        # Cores diferentes para cada lado
+        if side == "A":
+            cor = "white"   # igual à exibição
+        else:
+            cor = "#199649"  # verde igual ao lado B da exibição
+
+        self.__dict__[f"lbl_{side}_points"].setStyleSheet(
+        f"font-size:60px; font-weight:900; color:{cor};"
+    )
         layout.addWidget(self.__dict__[f"lbl_{side}_points"])
 
         # Botões pontuação (padrão IBJJF)
@@ -255,11 +282,21 @@ class PlacarControle(QWidget):
         self.timer_label.setText(self._fmt(self.remaining))
         self.update_exibicao()
 
+    def reset_all(self):
+        """Reseta tempo + placares"""
+        self.pause()
+        self.remaining = self.initial_secs
+        for side in ("A", "B"):
+            self.state[side] = {"points": 0, "advantages": 0, "penalties": 0}
+        self._update_labels()
+        self.update_exibicao()
+        self.timer_label.setText(self._fmt(self.remaining))
+
     def set_time(self):
         try:
             minutes = int(self.time_input.text())
             self.initial_secs = minutes * 60
-            self.reset()
+            self.reset_all()
         except ValueError:
             self.time_input.setText("Erro")
 
@@ -269,33 +306,34 @@ class PlacarControle(QWidget):
     # ===== Atalhos de teclado =====
     def keyPressEvent(self, event):
         key = event.key()
-        # Cronômetro
-        if key == Qt.Key_Space:# type: ignore
+        if key == Qt.Key_Space:  # type: ignore
             self.pause() if self.running else self.start()
-        elif key == Qt.Key_R:# type: ignore
+        elif key == Qt.Key_R:  # type: ignore
             self.reset()
-        elif key == Qt.Key_F:# type: ignore
+        elif key == Qt.Key_T:  # type: ignore
+            self.reset_all()
+        elif key == Qt.Key_F:  # type: ignore
             self.exibicao.toggle_fullscreen()
 
         # Atleta A
-        elif key == Qt.Key_1: self._change("A", "points", 2)# type: ignore
-        elif key == Qt.Key_2: self._change("A", "points", 3)# type: ignore
-        elif key == Qt.Key_3: self._change("A", "points", 4)# type: ignore
-        elif key == Qt.Key_4: self._change("A", "points", -1)# type: ignore
-        elif key == Qt.Key_Q: self._change("A", "advantages", 1)# type: ignore
-        elif key == Qt.Key_A: self._change("A", "advantages", -1)# type: ignore
-        elif key == Qt.Key_W: self._change("A", "penalties", 1)# type: ignore
-        elif key == Qt.Key_S: self._change("A", "penalties", -1)# type: ignore
+        elif key == Qt.Key_1: self._change("A", "points", 2)  # type: ignore
+        elif key == Qt.Key_2: self._change("A", "points", 3)  # type: ignore
+        elif key == Qt.Key_3: self._change("A", "points", 4)  # type: ignore
+        elif key == Qt.Key_4: self._change("A", "points", -1)  # type: ignore
+        elif key == Qt.Key_Q: self._change("A", "advantages", 1)  # type: ignore
+        elif key == Qt.Key_A: self._change("A", "advantages", -1)  # type: ignore
+        elif key == Qt.Key_W: self._change("A", "penalties", 1)  # type: ignore
+        elif key == Qt.Key_S: self._change("A", "penalties", -1)  # type: ignore
 
         # Atleta B
-        elif key == Qt.Key_7: self._change("B", "points", 2)# type: ignore
-        elif key == Qt.Key_8: self._change("B", "points", 3)# type: ignore
-        elif key == Qt.Key_9: self._change("B", "points", 4)# type: ignore
-        elif key == Qt.Key_0: self._change("B", "points", -1)# type: ignore
-        elif key == Qt.Key_U: self._change("B", "advantages", 1)# type: ignore
-        elif key == Qt.Key_J: self._change("B", "advantages", -1)# type: ignore
-        elif key == Qt.Key_I: self._change("B", "penalties", 1)# type: ignore
-        elif key == Qt.Key_K: self._change("B", "penalties", -1) # type: ignore
+        elif key == Qt.Key_7: self._change("B", "points", 2)  # type: ignore
+        elif key == Qt.Key_8: self._change("B", "points", 3)  # type: ignore
+        elif key == Qt.Key_9: self._change("B", "points", 4)  # type: ignore
+        elif key == Qt.Key_0: self._change("B", "points", -1)  # type: ignore
+        elif key == Qt.Key_U: self._change("B", "advantages", 1)  # type: ignore
+        elif key == Qt.Key_J: self._change("B", "advantages", -1)  # type: ignore
+        elif key == Qt.Key_I: self._change("B", "penalties", 1)  # type: ignore
+        elif key == Qt.Key_K: self._change("B", "penalties", -1)  # type: ignore
 
 
 # ================== TELA INICIAL ==================
@@ -330,8 +368,8 @@ class TelaInicial(QWidget):
         layout.addWidget(btn_start)
 
     def iniciar(self):
-        atleta1 = self.atleta1_input.text().strip() or "Atleta 1"
-        atleta2 = self.atleta2_input.text().strip() or "Atleta 2"
+        atleta1 = self.atleta1_input.text().strip() #or "Atleta 1"
+        atleta2 = self.atleta2_input.text().strip() #or "Atleta 2"
         try:
             minutos = int(self.tempo_input.text())
         except:
