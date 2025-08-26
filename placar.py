@@ -25,37 +25,49 @@ class PlacarExibicao(QWidget):
 
         # Layout principal
         main = QVBoxLayout(self)
-
-        # ===== TOPO: LOGO + CRONÔMETRO =====
+        
+        # Topo com logo à esquerda e cronômetro centralizado
         top_layout = QHBoxLayout()
-
-        # Logo no canto superior esquerdo
+        
+        # Logo no canto esquerdo
         self.logo_label = QLabel()
         pixmap = QPixmap("logo.png") # Coloque o caminho da sua imagem aqui
         if not pixmap.isNull():
             pixmap = pixmap.scaledToHeight(120, Qt.SmoothTransformation)# type: ignore
             self.logo_label.setPixmap(pixmap)
         self.logo_label.setAlignment(Qt.AlignLeft | Qt.AlignTop)  # type: ignore
-        top_layout.addWidget(self.logo_label, alignment=Qt.AlignLeft)# type: ignore
-
-        # Cronômetro
+        top_layout.addWidget(self.logo_label)
+        
+        # Cronômetro centralizado na tela
         self.timer_label = QLabel(tempo_texto)
         self.timer_label.setAlignment(Qt.AlignCenter)  # type: ignore
         self.timer_label.setStyleSheet(
             "font-size:150px; font-weight:900; color:white;"
         )
         self.timer_label.setFixedHeight(140)
-        top_layout.addWidget(self.timer_label, stretch=1)
-
-        top_layout.addStretch()
+        
+        # Centralizar o cronômetro na tela inteira
+        top_layout.addStretch(1)
+        top_layout.addWidget(self.timer_label)
+        top_layout.addStretch(1)
+        
+        # Espaço vazio à direita para balancear o logo
+        empty_label = QLabel()
+        empty_label.setFixedSize(self.logo_label.sizeHint())
+        top_layout.addWidget(empty_label)
+        
         main.addLayout(top_layout)
 
         # ===== PLACAR DOS ATLETAS =====
         board = QHBoxLayout()
-        main.addLayout(board)
-
+        
+        # Placar do atleta A (esquerda)
         board.addWidget(self._build_side("A", atleta1, "white"))
+        
+        # Placar do atleta B (direita)
         board.addWidget(self._build_side("B", atleta2, "#199649"))
+        
+        main.addLayout(board)
 
     def _build_side(self, side, name, color):
         frame = QFrame()
