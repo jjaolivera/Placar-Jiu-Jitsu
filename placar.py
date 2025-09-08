@@ -2,10 +2,10 @@ import sys
 from functools import partial
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
-    QVBoxLayout, QHBoxLayout, QFrame, QLineEdit
+    QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QShortcut,
 )
 from PyQt5.QtCore import QTimer, Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import (QPixmap, QKeySequence,)
 
 
 # ================== TELÃO (EXIBIÇÃO) ==================
@@ -33,7 +33,7 @@ class PlacarExibicao(QWidget):
         self.logo_label = QLabel()
         pixmap = QPixmap("logo.png") # Coloque o caminho da sua imagem aqui
         if not pixmap.isNull():
-            pixmap = pixmap.scaledToHeight(120, Qt.SmoothTransformation)# type: ignore
+            pixmap = pixmap.scaledToHeight(250, Qt.SmoothTransformation)# type: ignore
             self.logo_label.setPixmap(pixmap)
         self.logo_label.setAlignment(Qt.AlignLeft | Qt.AlignTop)  # type: ignore
         top_layout.addWidget(self.logo_label)
@@ -42,9 +42,9 @@ class PlacarExibicao(QWidget):
         self.timer_label = QLabel(tempo_texto)
         self.timer_label.setAlignment(Qt.AlignCenter)  # type: ignore
         self.timer_label.setStyleSheet(
-            "font-size:150px; font-weight:900; color:white;"
+            "font-size:250px; font-weight:900; color:white;"
         )
-        self.timer_label.setFixedHeight(140)
+        self.timer_label.setFixedHeight(250)
         
         # Centralizar o cronômetro na tela inteira
         top_layout.addStretch(1)
@@ -68,6 +68,15 @@ class PlacarExibicao(QWidget):
         board.addWidget(self._build_side("B", atleta2, "#199649"))
         
         main.addLayout(board)
+        shortcut_fullscreen = QShortcut(QKeySequence("F11"), self)
+        shortcut_fullscreen.activated.connect(self.toggle_fullscreen)
+
+    def toggle_fullscreen(self): # type: ignore
+        """Alterna entre fullscreen e modo janela na tela de controle"""
+        if self.isFullScreen():
+            self.showNormal()
+        else:
+            self.showFullScreen()
 
     def _build_side(self, side, name, color):
         frame = QFrame()
@@ -83,7 +92,7 @@ class PlacarExibicao(QWidget):
         # Pontos principais
         lbl_points = QLabel("0")
         lbl_points.setAlignment(Qt.AlignCenter)  # type: ignore
-        lbl_points.setStyleSheet("font-size:250px; font-weight:900; color:black;")
+        lbl_points.setStyleSheet("font-size:350px; font-weight:900; color:black;")
         layout.addWidget(lbl_points)
 
         # Linha com Vantagem (azul) e Punição (vermelho) lado a lado
@@ -94,7 +103,7 @@ class PlacarExibicao(QWidget):
         vant_layout = QVBoxLayout(vant)
         lbl_v = QLabel("0")
         lbl_v.setAlignment(Qt.AlignCenter)  # type: ignore
-        lbl_v.setStyleSheet("font-size:80px; font-weight:900; color:black;")
+        lbl_v.setStyleSheet("font-size:150px; font-weight:900; color:black;")
         vant_layout.addWidget(lbl_v)
         bottom.addWidget(vant)
 
@@ -103,7 +112,7 @@ class PlacarExibicao(QWidget):
         pen_layout = QVBoxLayout(pen)
         lbl_p = QLabel("0")
         lbl_p.setAlignment(Qt.AlignCenter)  # type: ignore
-        lbl_p.setStyleSheet("font-size:80px; font-weight:900; color:black;")
+        lbl_p.setStyleSheet("font-size:150px; font-weight:900; color:black;")
         pen_layout.addWidget(lbl_p)
         bottom.addWidget(pen)
 
@@ -164,9 +173,9 @@ class PlacarControle(QWidget):
         self.timer_label = QLabel(self._fmt(self.remaining))
         self.timer_label.setAlignment(Qt.AlignCenter)  # type: ignore
         self.timer_label.setStyleSheet(
-            "font-size:50px; font-weight:900; color:#0f0; background:#000;"
+            "font-size:150px; font-weight:900; color:white; background:#000;"
         )
-        self.timer_label.setFixedHeight(80)
+        self.timer_label.setFixedHeight(150)
         main.addWidget(self.timer_label)
 
         # (Opcional) alterar tempo durante o evento
@@ -191,17 +200,26 @@ class PlacarControle(QWidget):
         for text, func in [
             ("▶ Iniciar (I)", self.start),
             ("⏸ Pausar (P)", self.pause),
-            ("⏹ Resetar (T)", self.reset),
+            ("⏹ Reset. Tempo (T)", self.reset),
             ("🔄 Resetar Tudo (R)", self.reset_all),  # Novo botão
             ("⛶ Tela Cheia (F11)", self.exibicao.toggle_fullscreen)
         ]:
             btn = QPushButton(text)
-            btn.setStyleSheet("font-size:20px; padding:10px;")
+            btn.setStyleSheet("font-size:25px; padding:10px;")
             btn.clicked.connect(func)
             timer_controls.addWidget(btn)
         main.addLayout(timer_controls)
 
         self.update_exibicao()
+        shortcut_fullscreen = QShortcut(QKeySequence("F10"), self)
+        shortcut_fullscreen.activated.connect(self.toggle_fullscreen)
+
+    def toggle_fullscreen(self):
+        """Alterna entre fullscreen e modo janela na tela de controle"""
+        if self.isFullScreen():
+            self.showNormal()
+        else:
+            self.showFullScreen()
 
     def _build_side(self, side, name):
         frame = QFrame()
@@ -216,7 +234,7 @@ class PlacarControle(QWidget):
         # Pontos atuais (mostra no controle)
         self.__dict__[f"lbl_{side}_points"] = QLabel("0")
         self.__dict__[f"lbl_{side}_points"].setAlignment(Qt.AlignCenter)  # type: ignore
-        self.__dict__[f"lbl_{side}_points"].setStyleSheet("font-size:60px; font-weight:900;")
+        self.__dict__[f"lbl_{side}_points"].setStyleSheet("font-size:250px; font-weight:900;")
         layout.addWidget(self.__dict__[f"lbl_{side}_points"])
 
         # Cores diferentes para cada lado
@@ -226,35 +244,79 @@ class PlacarControle(QWidget):
             cor = "#199649"  # verde igual ao lado B da exibição
 
         self.__dict__[f"lbl_{side}_points"].setStyleSheet(
-        f"font-size:60px; font-weight:900; color:{cor};"
+        f"font-size:250px; font-weight:900; color:{cor};"
     )
         layout.addWidget(self.__dict__[f"lbl_{side}_points"])
 
         # Botões pontuação (padrão IBJJF)
         pts = QHBoxLayout()
-        for label, val in [("Queda/Rasp +2", 2), ("Passagem +3", 3), ("Montada/Costas +4", 4), ("-1 ponto", -1)]:
+
+        cores = {
+            "+2": "white",
+            "+3": "white",
+            "+4": "white",
+            "-1": "red"
+        }
+
+        for label, val in [("+2", 2), ("+3", 3), ("+4", 4), ("-1", -1)]:
             b = QPushButton(label)
+            cor = cores[label]
+            b.setStyleSheet(f"font-size:45px; font-weight:900; color:{cor}; min-width:100px; min-height:60px;")
             b.clicked.connect(partial(self._change, side, "points", val))
             pts.addWidget(b)
+
         layout.addLayout(pts)
 
         # Vantagem e Punição (com botões + e -)
         adv_pen = QHBoxLayout()
-        for metric, titulo in [("advantages", "Vantagem"), ("penalties", "Punição")]:
+        cores_metricas = {
+            "V +": "#1591EA",
+            "V −": "red",
+            "P +": "#1591EA",
+            "P −": "red"
+        }
+
+        for metric, titulo in [("advantages", "V"), ("penalties", "P")]:
             sub = QVBoxLayout()
             lbl = QLabel(f"{titulo}: 0")
+            lbl.setAlignment(Qt.AlignCenter)  # type: ignore
+            lbl.setStyleSheet(
+                "font-size:40px; font-weight:700; color:white; padding:5px; border-radius:10px;"
+            )
             self.__dict__[f"lbl_{side}_{metric}"] = lbl
             sub.addWidget(lbl)
+
             btns = QHBoxLayout()
             for t, v in [("+", 1), ("−", -1)]:
-                b = QPushButton(f"{titulo} {t}")
+                text = f"{titulo} {t}"
+                b = QPushButton(text)
+
+                # Aplica a cor de acordo com o dicionário
+                cor = cores_metricas[text]
+                b.setStyleSheet(
+                    f"font-size:24px; font-weight:700; color:{cor}; "
+                    "min-width:110px; min-height:50px;"
+                )
+
                 b.clicked.connect(partial(self._change, side, metric, v))
                 btns.addWidget(b)
+
             sub.addLayout(btns)
             adv_pen.addLayout(sub)
+
         layout.addLayout(adv_pen)
 
         return frame
+    
+    def keyPressEvent(self, event): # type: ignore
+        """Atalhos de teclado na tela de controle"""
+        if event.key() == Qt.Key_C:  # type: ignore # Fullscreen toggle
+            if self.isFullScreen():
+                self.showNormal()
+            else:
+                self.showFullScreen()
+        else:
+            super().keyPressEvent(event)
 
     # ===== Lógica =====
     def _change(self, side, metric, delta):
@@ -266,8 +328,8 @@ class PlacarControle(QWidget):
     def _update_labels(self):
         for side in ("A", "B"):
             self.__dict__[f"lbl_{side}_points"].setText(str(self.state[side]["points"]))
-            self.__dict__[f"lbl_{side}_advantages"].setText(f"Vantagem: {self.state[side]['advantages']}")
-            self.__dict__[f"lbl_{side}_penalties"].setText(f"Punição: {self.state[side]['penalties']}")
+            self.__dict__[f"lbl_{side}_advantages"].setText(f"V: {self.state[side]['advantages']}")
+            self.__dict__[f"lbl_{side}_penalties"].setText(f"P: {self.state[side]['penalties']}")
 
     def _fmt(self, s):
         m, sec = divmod(int(s), 60)
