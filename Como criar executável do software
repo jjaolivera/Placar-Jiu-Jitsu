@@ -1,0 +1,3 @@
+Para criar executável do python digite seguinte o comando no terminal:
+
+python -m PyInstaller --noconsole --onefile --windowed placar.py
